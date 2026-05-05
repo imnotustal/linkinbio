@@ -2,69 +2,157 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pettanko</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script>
+    <title>pettanko | bio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Видео фон с фиксом блокировки */
+        .video-background {
+            position: fixed;
+            top: 50%; left: 50%;
+            width: 100vw; height: 100vh;
+            transform: translate(-50%, -50%);
+            z-index: -2;
+            pointer-events: none;
+        }
+        .video-background iframe {
+            width: 100vw; height: 56.25vw; /* 16:9 */
+            min-height: 100vh; min-width: 177.77vh;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
+            z-index: -1;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(10, 10, 10, 0.5);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 50px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 0 100px rgba(0,0,0,0.9);
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .avatar {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            transition: 0.4s ease;
+        }
+        .avatar:hover { transform: scale(1.1); border-color: #fff; }
+
+        .nickname { font-size: 38px; letter-spacing: 5px; font-weight: 700; margin-bottom: 5px; }
+        .location { font-size: 14px; color: #666; margin-bottom: 30px; }
+
+        /* Lyrics */
+        .lyrics-box { height: 50px; margin: 20px 0; overflow: hidden; }
+        .lyric-line {
+            font-size: 15px; color: #aaa;
+            transition: 0.8s ease;
+            opacity: 0; transform: translateY(20px);
+            display: none;
+        }
+        .lyric-line.active { display: block; opacity: 1; transform: translateY(0); }
+
+        /* Cursor */
+        .cursor {
+            width: 18px; height: 18px; background: #fff;
+            border-radius: 50%; position: fixed;
+            pointer-events: none; z-index: 9999;
+            mix-blend-mode: difference;
+        }
+
+        .play-btn {
+            background: none; border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 10px 20px; border-radius: 10px;
+            font-family: inherit; margin-bottom: 20px; transition: 0.3s;
+        }
+        .play-btn:hover { background: #fff; color: #000; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
 </head>
 <body>
 
-    <!-- Кастомный курсор -->
     <div class="cursor"></div>
 
-    <!-- Видео фон (YouTube) -->
     <div class="video-background">
-        <iframe src="https://www.youtube.com/embed/ССЫЛКА_НА_ВИДЕО?autoplay=1&mute=1&loop=1&playlist=ID_ВИДЕО&controls=0&showinfo=0" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        <!-- Тот самый ролик Blue Lock -->
+        <iframe src="https://www.youtube.com/embed/e_yUWgAzSjs?autoplay=1&mute=1&loop=1&playlist=e_yUWgAzSjs&controls=0&modestbranding=1&rel=0" frameborder="0"></iframe>
     </div>
-
+    
     <div class="overlay"></div>
 
     <main class="glass-card">
-        <!-- Аудио и кнопка -->
-        <audio id="bg-audio" loop>
-            <source src="music.mp3" type="audio/mpeg">
-        </audio>
-        
-        <div class="controls">
-            <button id="play-pause"><i class="fas fa-play"></i></button>
+        <audio id="audio" loop src="music.mp3"></audio>
+        <button class="play-btn" id="pBtn">CLICK TO UNMUTE AUDIO</button>
+
+        <img src="avatar.png" class="avatar" alt="pettanko">
+        <h1 class="nickname">pettanko</h1>
+        <p class="location">Poland</p>
+
+        <div class="lyrics-box" id="lBox">
+            <p class="lyric-line active">I'm growing up, it's puberty...</p>
+            <p class="lyric-line">I'm not the same as I used to be...</p>
+            <p class="lyric-line">Everything is changing fast...</p>
+            <p class="lyric-line">Hope the good things always last...</p>
         </div>
 
-        <!-- Профиль -->
-        <div class="profile">
-            <div class="avatar-container">
-                <img src="avatar.png" alt="avatar" class="avatar" id="discord-avatar">
-                <div class="status-dot" id="discord-status"></div>
-            </div>
-            <h1 class="nickname">pettanko</h1>
-            <p class="location"><i class="fas fa-map-marker-alt"></i> Poland</p>
-            
-            <div class="discord-info" id="discord-info">
-                <span id="discord-name">Loading...</span>
-                <div class="badges" id="discord-badges"></div>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <!-- Текст песни -->
-        <div class="lyrics-container">
-            <div class="lyrics-scroll" id="lyrics">
-                <p>I'm growing up, it's puberty...</p>
-                <p>I'm not the same as I used to be...</p>
-                <p>Everything is changing fast...</p>
-                <p>Hope the good things always last...</p>
-            </div>
-        </div>
-
-        <!-- Футер со счетчиком -->
-        <div class="footer">
-            <div class="views">
-                <i class="fas fa-eye"></i> 
-                <img src="https://hits.dwyl.com/pettanko/repo-name.svg" alt="Views">
-            </div>
+        <div style="margin-top: 20px;">
+            <img src="https://hits.dwyl.com/pettanko/bio.svg" alt="views">
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <script>
+        // Курсор
+        const crsr = document.querySelector('.cursor');
+        document.addEventListener('mousemove', e => {
+            crsr.style.left = e.clientX + 'px';
+            crsr.style.top = e.clientY + 'px';
+        });
+
+        // Музыка
+        const a = document.getElementById('audio');
+        const b = document.getElementById('pBtn');
+        b.onclick = () => {
+            if(a.paused) { a.play(); b.innerText = "PAUSE MUSIC"; }
+            else { a.pause(); b.innerText = "PLAY MUSIC"; }
+        };
+
+        // Текст песни
+        const lines = document.querySelectorAll('.lyric-line');
+        let i = 0;
+        setInterval(() => {
+            lines[i].classList.remove('active');
+            i = (i + 1) % lines.length;
+            lines[i].classList.add('active');
+        }, 3500);
+    </script>
 </body>
 </html>
