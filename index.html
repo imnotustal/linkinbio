@@ -3,247 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pettanko | bio</title>
+    <title>pettanko | verified</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --bg-black: #020202;
-            --card-bg: rgba(5, 5, 5, 0.6);
-            --border-glow: rgba(255, 255, 255, 0.05);
-        }
-
+        :root { --bg: #000; --accent: rgba(255, 255, 255, 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
-        body { 
-            background: var(--bg-black); 
-            color: #fff; 
-            font-family: 'Space Grotesk', sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        body { background: var(--bg); color: #fff; font-family: 'Space Grotesk', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* Splash Screen (Для автоплея) */
+        #splash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000; display: flex;
+            align-items: center; justify-content: center; transition: 1s;
         }
+        .enter-text { letter-spacing: 5px; opacity: 0.5; animation: blink 2s infinite; }
 
-        /* Слои */
-        canvas#particles { 
-            position: fixed; top: 0; left: 0; 
-            z-index: 9999; /* Поверх всего, даже карточки */
-            pointer-events: none; 
-        }
-        .custom-cursor {
-            position: fixed; width: 12px; height: 12px;
-            background: #fff; border-radius: 50%;
-            z-index: 10000; /* Самый верхний слой */
-            pointer-events: none; mix-blend-mode: difference;
-            transform: translate(-50%, -50%);
-        }
+        /* Видео-фон */
+        .bg-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
+        .bg-wrap iframe { width: 100vw; height: 100vh; transform: scale(1.3); filter: brightness(0.3) grayscale(1); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent, #000 110%); z-index: -1; }
 
-        /* Визуальный фон */
-        .bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
-        .bg-video iframe { width: 100vw; height: 100vh; transform: scale(1.3); filter: brightness(0.3) grayscale(1); }
-        
-        /* Скрытый плеер для музыки */
-        #music-player { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 20%, #000 110%); z-index: -1; }
-
-        /* Карточка Pettanko */
+        /* Карточка */
+        .container { height: 100vh; display: flex; align-items: center; justify-content: center; }
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--border-glow);
-            border-radius: 24px;
-            padding: 45px;
-            width: 400px;
-            text-align: center;
-            box-shadow: 0 0 60px rgba(0,0,0,0.9);
-            z-index: 50; /* Ниже частиц и курсора */
-            animation: fadeIn 1.5s cubic-bezier(0.19, 1, 0.22, 1);
-            position: relative;
+            background: rgba(5, 5, 5, 0.4); backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;
+            padding: 40px; width: 400px; text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 50;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 60px rgba(0,0,0,1); }
+
+        /* Имена и Галочка */
+        .nick-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
+        .nickname { font-size: 32px; letter-spacing: 5px; font-weight: 700; text-transform: uppercase; }
+        
+        .verify-icon { color: #fff; font-size: 18px; position: relative; }
+        .verify-icon:hover::after {
+            content: "VERIFIED FEMBOY"; position: absolute; bottom: 25px; left: 50%;
+            transform: translateX(-50%); font-size: 10px; background: #fff; color: #000;
+            padding: 2px 8px; border-radius: 4px; white-space: nowrap; font-weight: 700;
         }
 
-        .nickname { 
-            font-size: 34px; letter-spacing: 8px; font-weight: 700; 
-            text-transform: uppercase; margin-bottom: 10px;
-            text-shadow: 0 0 15px rgba(255,255,255,0.2);
-        }
+        /* Соцсети */
+        .socials { display: flex; justify-content: center; gap: 20px; margin: 25px 0; }
+        .social-link { color: #555; font-size: 24px; transition: 0.3s; }
+        .social-link:hover { color: #fff; filter: drop-shadow(0 0 8px #fff); transform: scale(1.2); }
 
-        .avatar-wrap { position: relative; width: 100px; height: 100px; margin: 0 auto 25px; }
-        .avatar { width: 100%; height: 100%; border-radius: 50%; border: 1px solid var(--border-glow); object-fit: cover; }
-        .dc-dot { position: absolute; bottom: 5px; right: 5px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #050505; background: #333; }
+        /* Субтитры */
+        .lyrics-box { height: 40px; display: flex; align-items: center; justify-content: center; margin: 15px 0; }
+        #lyric-text { font-size: 14px; color: #888; transition: 0.5s; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
 
-        /* Текст Лабубу */
-        .lyrics-section { height: 30px; margin: 20px 0; overflow: hidden; position: relative; }
-        .line { 
-            position: absolute; width: 100%; font-size: 14px; color: #555; 
-            opacity: 0; transform: translateY(15px); transition: all 0.8s ease;
-            text-shadow: 0 0 5px rgba(255,255,255,0.05);
-        }
-        .line.active { opacity: 1; transform: translateY(0); color: #ccc; }
+        /* Просмотры */
+        .counter { margin-top: 20px; opacity: 0.3; font-size: 11px; }
 
-        /* Плеер */
-        .controls { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 25px; }
-        .btn { background: none; border: none; color: #fff; font-size: 20px; transition: 0.3s; opacity: 0.6; }
-        .btn:hover { opacity: 1; transform: scale(1.1); }
-        .vol { width: 80px; height: 3px; appearance: none; background: rgba(255,255,255,0.1); border-radius: 5px; outline: none; }
-        .vol::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
+        /* Частицы и Курсор */
+        canvas#ash { position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; }
+        .cursor { position: fixed; width: 10px; height: 10px; background: #fff; border-radius: 50%; z-index: 10001; mix-blend-mode: difference; pointer-events: none; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
     </style>
 </head>
 <body>
 
-    <div class="custom-cursor"></div>
-    <canvas id="particles"></canvas>
+<div id="splash" onclick="startBio()">
+    <div class="enter-text">CLICK TO ENTER</div>
+</div>
 
-    <!-- Фон (Blue Lock) -->
-    <div class="bg-video">
-        <iframe src="https://www.youtube.com/embed/e_yUWgAzSjs?autoplay=1&mute=1&loop=1&playlist=e_yUWgAzSjs&controls=0&showinfo=0&rel=0" frameborder="0"></iframe>
-    </div>
+<div class="cursor"></div>
+<canvas id="ash"></canvas>
 
-    <!-- Музыка (Labubu) -->
-    <div id="music-player">
-        <div id="yt-audio"></div>
-    </div>
+<div class="bg-wrap">
+    <iframe src="https://www.youtube.com/embed/e_yUWgAzSjs?autoplay=1&mute=1&loop=1&playlist=e_yUWgAzSjs&controls=0&showinfo=0&rel=0" frameborder="0"></iframe>
+</div>
+<div id="audio-player"></div>
+<div class="overlay"></div>
 
-    <div class="overlay"></div>
-
+<div class="container">
     <main class="card">
-        <div class="controls">
-            <button id="playBtn" class="btn"><i class="fas fa-play"></i></button>
-            <input type="range" id="volume" class="vol" min="0" max="100" value="50">
+        <div class="nick-row">
+            <h1 class="nickname">pettanko</h1>
+            <div class="verify-icon"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <p style="color:#444; font-size:12px; letter-spacing:3px;">POLAND</p>
+
+        <div class="socials">
+            <a href="https://steamcommunity.com/id/pettank0/" target="_blank" class="social-link"><i class="fab fa-steam"></i></a>
+            <a href="https://discordapp.com/users/1131173686221754398" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
         </div>
 
-        <div class="avatar-wrap">
-            <img src="avatar.png" id="avatar" class="avatar" alt="pettanko">
-            <div class="dc-dot" id="dot"></div>
+        <div class="lyrics-box">
+            <p id="lyric-text">...</p>
         </div>
 
-        <h1 class="nickname">pettanko</h1>
-        <p style="font-size: 12px; color: #444; letter-spacing: 2px;">POLAND</p>
-
-        <div class="lyrics-section" id="lyrics">
-            <p class="line active">Я в лабубу, я в лабубу</p>
-            <p class="line">Она танцует на моем гробу</p>
-            <p class="line">Стиль — это мрак, стиль — это тень</p>
-            <p class="line">Я пропадаю каждый божий день</p>
-        </div>
-
-        <div id="dc-status" style="font-size: 11px; color: #333; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 15px;">
-            OFFLINE
+        <div class="counter">
+            <i class="fas fa-eye"></i>
+            <!-- ЗАМЕНИ ТУТ НА СВОЙ РЕПОЗИТОРИЙ -->
+            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fimnotustal-creator%2Flinkinbio&count_bg=%23000000&title_bg=%23000000&icon=&icon_color=%23E7E7E7&title=views&edge_flat=true" alt="views">
         </div>
     </main>
+</div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        // 1. КУРСОР И ЧАСТИЦЫ (ПРАХ)
-        const cursor = document.querySelector('.custom-cursor');
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+    const cursor = document.querySelector('.cursor');
+    const canvas = document.getElementById('ash');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let audioPlayer;
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        window.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            for(let i=0; i<4; i++) particles.push(new Ash(e.clientX, e.clientY));
+    // 1. YouTube Audio
+    function onYouTubeIframeAPIReady() {
+        audioPlayer = new YT.Player('audio-player', {
+            height: '0', width: '0', videoId: 'fgEn4S7BVNI',
+            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'fgEn4S7BVNI' },
+            events: { 'onStateChange': onPlayerStateChange }
         });
+    }
 
-        class Ash {
-            constructor(x, y) {
-                this.x = x; this.y = y;
-                this.size = Math.random() * 2 + 1;
-                this.speedX = Math.random() * 2 - 1;
-                this.speedY = Math.random() * -2 - 0.5; // летит вверх как пепел
-                this.opacity = 1;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.opacity -= 0.015;
-                this.size *= 0.98;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
+    function startBio() {
+        document.getElementById('splash').style.opacity = '0';
+        setTimeout(() => document.getElementById('splash').remove(), 1000);
+        audioPlayer.playVideo();
+        syncLyrics();
+    }
 
-        function render() {
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.update(); p.draw();
-                if(p.opacity <= 0) particles.splice(i, 1);
-            });
-            requestAnimationFrame(render);
-        }
-        render();
+    // 2. Субтитры (Синхронизация по времени)
+    const subData = [
+        { t: 0, text: "Yung Fimoz & Migas — Labubu" },
+        { t: 10, text: "Я в Лабубу, я в Лабубу" },
+        { t: 13, text: "Она танцует на моем гробу" },
+        { t: 15, text: "Я в Лабубу, я в Лабубу" },
+        { t: 18, text: "Она танцует на моем гробу" },
+        { t: 21, text: "Стиль — это мрак, стиль — это тень" },
+        { t: 25, text: "Я пропадаю каждый божий день" }
+    ];
 
-        // 2. YOUTUBE AUDIO API
-        let player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('yt-audio', {
-                height: '1', width: '1',
-                videoId: 'fgEn4S7BVNI',
-                playerVars: { 'autoplay': 0, 'controls': 0 },
-                events: { 'onReady': onPlayerReady }
-            });
-        }
-
-        function onPlayerReady(event) {
-            const playBtn = document.getElementById('playBtn');
-            const volume = document.getElementById('volume');
-            
-            playBtn.onclick = () => {
-                if(player.getPlayerState() === 1) {
-                    player.pauseVideo();
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                } else {
-                    player.playVideo();
-                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                }
-            };
-            volume.oninput = (e) => player.setVolume(e.target.value);
-        }
-
-        // 3. ТЕКСТ (LABUBU)
-        const lines = document.querySelectorAll('.line');
-        let lIdx = 0;
+    function syncLyrics() {
         setInterval(() => {
-            lines[lIdx].classList.remove('active');
-            lIdx = (lIdx + 1) % lines.length;
-            lines[lIdx].classList.add('active');
-        }, 3500);
+            const curTime = audioPlayer.getCurrentTime();
+            const active = [...subData].reverse().find(s => curTime >= s.t);
+            if (active) document.getElementById('lyric-text').innerText = active.text;
+        }, 500);
+    }
 
-        // 4. DISCORD (LANYARD)
-        async function fetchDC() {
-            try {
-                const r = await fetch('https://api.lanyard.rest/v1/users/1131173686221754398');
-                const { data } = await r.json();
-                const dot = document.getElementById('dot');
-                const status = document.getElementById('dc-status');
-                
-                const colors = { online: '#43b581', dnd: '#f04747', idle: '#faa61a', offline: '#747f8d' };
-                dot.style.background = colors[data.discord_status] || '#747f8d';
-                
-                if(data.listening_to_spotify) {
-                    status.innerText = `LISTENING TO: ${data.spotify.song}`;
-                } else if (data.activities.length > 0) {
-                    status.innerText = `PLAYING: ${data.activities[0].name}`;
-                } else {
-                    status.innerText = data.discord_status.toUpperCase();
-                }
-            } catch(e) { console.error("Lanyard Error"); }
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) audioPlayer.playVideo();
+    }
+
+    // 3. Прах и Курсор
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener('mousemove', e => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        for(let i=0; i<5; i++) particles.push(new Particle(e.clientX, e.clientY));
+    });
+
+    class Particle {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.s = Math.random() * 2;
+            this.vx = Math.random() * 2 - 1;
+            this.vy = Math.random() * -2;
+            this.o = 1;
         }
-        fetchDC();
-        setInterval(fetchDC, 15000);
-    </script>
+        draw() {
+            ctx.fillStyle = `rgba(255,255,255,${this.o})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI*2); ctx.fill();
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy; this.o -= 0.01;
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        particles = particles.filter(p => p.o > 0);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+</script>
 </body>
 </html>
