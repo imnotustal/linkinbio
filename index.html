@@ -9,14 +9,14 @@
     <style>
         :root {
             --main-black: #050505;
-            --glass: rgba(8, 8, 8, 0.4);
-            --glass-hover: rgba(15, 15, 15, 0.5);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.18);
+            --glass: rgba(8, 8, 8, 0.25);
+            --glass-hover: rgba(15, 15, 15, 0.35);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.14);
+            --glow: rgba(255, 255, 255, 0.03);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
         body { background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; height: 100vh; overflow: hidden; }
-
         /* SPLASH */
         #splash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -27,180 +27,308 @@
         .splash-text {
             letter-spacing: 12px; font-weight: 300; font-size: 13px;
             animation: splashPulse 2.4s ease-in-out infinite;
-            color: rgba(255,255,255,0.7);
-            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
         }
-        @keyframes splashPulse { 0%,100% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
-
-        /* BACKGROUND */
+        @keyframes splashPulse { 0%,100% { opacity: 0.2; transform: scale(0.98); } 50% { opacity: 0.7; transform: scale(1); } }
+        /* BACKGROUND VIDEO */
         .bg-vid { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
-        .bg-vid iframe { width: 100vw; height: 100vh; transform: scale(1.5); filter: brightness(0.2) grayscale(1); }
+        .bg-vid iframe { width: 100vw; height: 100vh; transform: scale(1.4); filter: brightness(0.18) grayscale(1); }
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, #000 90%);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, #000 80%);
             z-index: -1;
         }
-
-        /* CURSOR */
+        .overlay::after {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: 0.035;
+            pointer-events: none;
+            z-index: 1;
+        }
+        /* CURSOR & PARTICLES */
         canvas#ash { position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; }
         .cursor {
             position: fixed; width: 8px; height: 8px; background: #fff; border-radius: 50%;
             z-index: 10001; mix-blend-mode: difference; pointer-events: none;
             transform: translate(-50%, -50%);
-            transition: width 0.3s ease, height 0.3s ease;
+            transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
         }
-        .cursor.hovering { width: 24px; height: 24px; background: rgba(255,255,255,0.8); }
-
+        .cursor.hovering { width: 20px; height: 20px; background: rgba(255,255,255,0.5); }
+        /* LAYOUT */
+        .container {
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            z-index: 50; position: relative;
+        }
         /* CARD */
-        .container { height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 50; position: relative; }
         .card {
             background: var(--glass);
-            backdrop-filter: blur(30px) saturate(160%);
-            -webkit-backdrop-filter: blur(30px) saturate(160%);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
             border: 1px solid var(--border);
-            border-radius: 32px;
-            padding: 50px 40px;
+            border-radius: 28px;
+            padding: 44px 40px 36px;
             width: 420px;
             text-align: center;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
-            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            animation: cardIn 1.4s cubic-bezier(0.19, 1, 0.22, 1) both;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.02) inset,
+                0 40px 80px rgba(0,0,0,0.8),
+                0 0 120px rgba(255,255,255,0.015);
+            transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1),
+                        border-color 0.5s ease,
+                        box-shadow 0.7s ease;
+            animation: cardIn 1.2s cubic-bezier(0.19, 1, 0.22, 1) both;
+            position: relative;
+            overflow: hidden;
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--border-hover); background: var(--glass-hover); }
-        @keyframes cardIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-
+        .card::before {
+            content: '';
+            position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            border-radius: 50%;
+        }
+        .card::after {
+            content: '';
+            position: absolute; top: -60%; left: -20%; width: 140%; height: 80%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.025) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+            transition: opacity 0.6s ease;
+            opacity: 0;
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.005);
+            border-color: var(--border-hover);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.04) inset,
+                0 60px 100px rgba(0,0,0,0.85),
+                0 0 150px rgba(255,255,255,0.03);
+        }
+        .card:hover::after { opacity: 1; }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         /* AVATAR */
-        .avatar-wrap { position: relative; width: 115px; height: 115px; margin: 0 auto 25px; }
-        .avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
-        .status-dot {
-            position: absolute; bottom: 6px; right: 6px; width: 18px; height: 18px;
-            border-radius: 50%; border: 3px solid #080808; background: #747f8d;
-            transition: all 0.4s ease;
+        .avatar-wrap {
+            position: relative; width: 110px; height: 110px;
+            margin: 0 auto 22px;
+            animation: avatarIn 1.4s cubic-bezier(0.19, 1, 0.22, 1) 0.1s both;
         }
-        .status-dot.online { background: #43b581; box-shadow: 0 0 12px #43b581; }
-        .status-dot.dnd { background: #f04747; box-shadow: 0 0 12px #f04747; }
-        .status-dot.idle { background: #faa61a; box-shadow: 0 0 12px #faa61a; }
-
-        /* INFO */
-        .nickname { font-size: 32px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 4px; }
-        .role-tag { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 25px; }
-        .divider { width: 50px; height: 1px; background: rgba(255,255,255,0.1); margin: 0 auto 25px; }
-
+        @keyframes avatarIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .avatar-ring {
+            position: absolute; inset: -4px; border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 60%, rgba(255,255,255,0.08) 80%, transparent 100%);
+            animation: ringRotate 6s linear infinite;
+        }
+        @keyframes ringRotate { to { transform: rotate(360deg); } }
+        .avatar {
+            position: relative; width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; border: 1px solid var(--border);
+            z-index: 1;
+            transition: filter 0.4s ease;
+        }
+        .avatar:hover { filter: brightness(1.1); }
+        .status-dot {
+            position: absolute; bottom: 8px; right: 8px; width: 16px; height: 16px;
+            border-radius: 50%; border: 3px solid #050505; background: #747f8d;
+            z-index: 2;
+            transition: background 0.6s ease;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .status-dot.online { background: #43b581; box-shadow: 0 0 8px #43b58166; }
+        .status-dot.dnd { background: #f04747; box-shadow: 0 0 8px #f0474766; }
+        .status-dot.idle { background: #faa61a; box-shadow: 0 0 8px #faa61a66; }
+        .status-dot.offline { background: #747f8d; box-shadow: none; }
+        /* NAME */
+        .name-container {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 6px;
+            animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.3s both;
+        }
+        .nickname {
+            font-size: 30px; font-weight: 700; letter-spacing: 6px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.6));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .verify { position: relative; color: rgba(255,255,255,0.7); font-size: 17px; transition: color 0.3s; }
+        .verify:hover { color: #fff; }
+        .verify:hover::after {
+            content: "VERIFIED FEMBOY"; position: absolute; bottom: 28px; left: 50%;
+            transform: translateX(-50%); font-size: 9px; background: #fff; color: #000;
+            padding: 4px 10px; border-radius: 3px; white-space: nowrap; font-weight: 900;
+            letter-spacing: 2px; animation: tooltipIn 0.2s ease both;
+        }
+        @keyframes tooltipIn { from { opacity: 0; transform: translateX(-50%) translateY(4px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .role-tag {
+            font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 5px;
+            margin-bottom: 20px; text-transform: uppercase;
+            animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.4s both;
+        }
+        /* DIVIDER */
+        .divider {
+            width: 40px; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            margin: 0 auto 20px;
+            animation: dividerIn 1s ease 0.5s both;
+        }
+        @keyframes dividerIn { from { width: 0; opacity: 0; } to { width: 40px; opacity: 1; } }
         /* LINKS */
-        .links { display: flex; justify-content: center; gap: 25px; margin-bottom: 30px; }
-        .link-item { color: rgba(255,255,255,0.4); font-size: 22px; transition: all 0.3s; }
-        .link-item:hover { color: #fff; transform: translateY(-3px) scale(1.1); filter: drop-shadow(0 0 8px #fff); }
-
+        .links {
+            display: flex; justify-content: center; gap: 28px; margin-bottom: 24px;
+            animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.5s both;
+        }
+        .link-item {
+            color: rgba(255,255,255,0.25); font-size: 22px;
+            transition: color 0.35s ease, transform 0.35s cubic-bezier(0.19,1,0.22,1), filter 0.35s ease;
+            display: flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px; border-radius: 12px;
+            border: 1px solid transparent;
+        }
+        .link-item:hover {
+            color: #fff; transform: translateY(-4px) scale(1.15);
+            filter: drop-shadow(0 0 12px rgba(255,255,255,0.4));
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+        }
         /* LYRICS */
         .lyrics-box {
-            min-height: 60px; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px; padding: 15px; margin-bottom: 20px;
+            min-height: 52px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 10px 16px;
+            animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.6s both;
         }
         #lyrics-text {
-            font-size: 11px; color: rgba(255,255,255,0.6);
-            text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.5;
-            transition: opacity 0.3s, transform 0.3s;
+            font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase;
+            letter-spacing: 1.8px; line-height: 1.6;
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        #lyrics-text.fade { opacity: 0; transform: translateY(5px); }
+        #lyrics-text.fade { opacity: 0; transform: translateY(4px); }
+        /* DISCORD ACTIVITY */
+        #dc-activity {
+            font-size: 10px; color: rgba(255,255,255,0.22); margin-top: 8px;
+            min-height: 14px; text-transform: uppercase; letter-spacing: 2px;
+            transition: opacity 0.5s ease;
+            animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.7s both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* CONTROLS */
-        .music-controls { display: flex; align-items: center; justify-content: center; gap: 15px; }
-        .music-controls button { background: none; border: none; color: #fff; opacity: 0.5; font-size: 16px; transition: 0.3s; }
-        .music-controls button:hover { opacity: 1; transform: scale(1.1); }
-        .volume-slider { width: 80px; height: 3px; accent-color: #fff; opacity: 0.4; transition: 0.3s; }
-        .volume-slider:hover { opacity: 0.8; }
-        
-        #dc-activity { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 15px; letter-spacing: 1px; }
+        /* MUSIC CONTROLS */
+        .music-controls {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            opacity: 0.75;
+        }
+        .music-controls button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 18px;
+            cursor: none;
+            transition: all 0.3s ease;
+        }
+        .music-controls button:hover {
+            color: #fff;
+            transform: scale(1.15);
+        }
+        .volume-slider {
+            width: 90px;
+            accent-color: rgba(255,255,255,0.7);
+        }
     </style>
 </head>
 <body>
-
 <div id="splash" onclick="init()">
-    <div class="splash-text">Click to enter</div>
+    <div class="splash-text">CLICK TO UNLOCK</div>
 </div>
-
 <div class="cursor" id="cursor"></div>
 <canvas id="ash"></canvas>
-
 <div class="bg-vid">
-    <iframe src="https://www.youtube.com/embed/e_yUWgAzSjs?autoplay=1&mute=1&loop=1&playlist=e_yUWgAzSjs&controls=0&showinfo=0&rel=0" frameborder="0"></iframe>
+    <iframe src="https://www.youtube.com/embed/e_yUWgAzSjs?autoplay=1&mute=1&loop=1&playlist=e_yUWgAzSjs&controls=0&showinfo=0&rel=0" frameborder="0" allow="autoplay"></iframe>
 </div>
-
-<!-- Музыкальный плеер (скрыт) -->
-<div id="player"></div>
-
+<div id="player" style="position:absolute;width:0;height:0;overflow:hidden;"></div>
 <div class="overlay"></div>
-
 <div class="container">
     <main class="card">
         <div class="avatar-wrap">
-            <img src="https://yt3.googleusercontent.com/Bkci2EwxZpc5lXCBD6sP2oEWNALIQVC77fH06Dmak8DLrOW-MXybnfCKhElcZD1BB6vVQNIsrA=s900-c-k-c0x00ffffff-no-rj" class="avatar" alt="pettanko">
+            <div class="avatar-ring"></div>
+            <img src="avatar.png" class="avatar" alt="pettanko">
             <div class="status-dot" id="dot"></div>
         </div>
-        
-        <h1 class="nickname">pettanko</h1>
-        <p class="role-tag">Developer & Designer</p>
-        
+        <div class="name-container">
+            <h1 class="nickname">pettanko</h1>
+            <div class="verify"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <p class="role-tag">DEVELOPER</p>
         <div class="divider"></div>
-        
         <div class="links">
             <a href="https://steamcommunity.com/id/pettank0/" target="_blank" class="link-item"><i class="fab fa-steam"></i></a>
             <a href="https://discordapp.com/users/1131173686221754398" target="_blank" class="link-item"><i class="fab fa-discord"></i></a>
-            <a href="https://github.com/pettanko-bio" target="_blank" class="link-item"><i class="fab fa-github"></i></a>
         </div>
-
         <div class="lyrics-box">
-            <p id="lyrics-text">Initializing...</p>
+            <p id="lyrics-text">WAITING...</p>
         </div>
 
         <div class="music-controls">
-            <button id="playPauseBtn" onclick="togglePlay()"><i class="fas fa-pause"></i></button>
-            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
+            <button id="playPauseBtn" onclick="togglePlay()"><i class="fas fa-play"></i></button>
+            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+            <span id="volumeValue" style="font-size:10px; color:rgba(255,255,255,0.5);">80%</span>
         </div>
 
-        <div id="dc-activity">Connecting to Lanyard...</div>
+        <div id="dc-activity">FETCHING DATA...</div>
     </main>
 </div>
-
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-    /* ── CURSOR & ASH ── */
+    /* ── CURSOR ────────────────────────────────── */
     const cursor = document.getElementById('cursor');
-    const canvas = document.getElementById('ash');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
     document.addEventListener('mousemove', e => {
         cursor.style.left = e.clientX + 'px';
         cursor.style.top = e.clientY + 'px';
-        for (let i = 0; i < 3; i++) particles.push(new Ash(e.clientX, e.clientY));
+        for (let i = 0; i < 4; i++) particles.push(new Ash(e.clientX, e.clientY));
     });
-
-    document.querySelectorAll('a, button').forEach(el => {
+    document.querySelectorAll('a, button, .verify').forEach(el => {
         el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
         el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
     });
-
+    /* ── ASH PARTICLES ─────────────────────────── */
+    const canvas = document.getElementById('ash');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
     class Ash {
         constructor(x, y) {
             this.x = x; this.y = y;
-            this.s = Math.random() * 1.5 + 0.5;
-            this.vx = (Math.random() - 0.5) * 1.2;
-            this.vy = Math.random() * -2 - 1;
-            this.a = 1;
+            this.s = Math.random() * 1.8 + 0.3;
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = Math.random() * -2.5 - 0.5;
+            this.a = 0.7 + Math.random() * 0.3;
         }
-        update() { this.x += this.vx; this.y += this.vy; this.a -= 0.015; this.vy += 0.05; }
+        update() { this.x += this.vx; this.y += this.vy; this.vy += 0.04; this.a -= 0.018; }
         draw() {
             ctx.fillStyle = `rgba(255,255,255,${this.a})`;
             ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2); ctx.fill();
         }
     }
-
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles = particles.filter(p => p.a > 0);
@@ -208,54 +336,79 @@
         requestAnimationFrame(render);
     }
     render();
-
-    /* ── YOUTUBE API ── */
+    /* ── YOUTUBE IFRAME API ────────────────────── */
     let ytPlayer;
+    let playerReady = false;
     let isPlaying = false;
 
     function onYouTubeIframeAPIReady() {
         ytPlayer = new YT.Player('player', {
-            height: '0', width: '0',
-            videoId: 'fgEn4S7BVNI', // ID твоего трека
-            playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'playlist': 'fgEn4S7BVNI' },
+            height: '1',
+            width: '1',
+            videoId: 'fgEn4S7BVNI',
+            playerVars: {
+                autoplay: 0,
+                loop: 1,
+                playlist: 'fgEn4S7BVNI',
+                controls: 0,
+                rel: 0,
+            },
             events: {
-                'onReady': (e) => { e.target.setVolume(50); },
-                'onStateChange': (e) => { isPlaying = (e.data === YT.PlayerState.PLAYING); }
+                onReady: () => { 
+                    playerReady = true; 
+                },
+                onStateChange: e => {
+                    if (e.data === YT.PlayerState.ENDED) ytPlayer.playVideo();
+                    if (e.data === YT.PlayerState.PLAYING) {
+                        isPlaying = true;
+                        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                    if (e.data === YT.PlayerState.PAUSED) {
+                        isPlaying = false;
+                        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                }
             }
         });
     }
 
+    /* ── MUSIC CONTROLS ────────────────────────── */
     function togglePlay() {
-        if (!ytPlayer) return;
-        const btn = document.getElementById('playPauseBtn');
+        if (!playerReady || !ytPlayer) return;
         if (isPlaying) {
             ytPlayer.pauseVideo();
-            btn.innerHTML = '<i class="fas fa-play"></i>';
         } else {
             ytPlayer.playVideo();
-            btn.innerHTML = '<i class="fas fa-pause"></i>';
         }
     }
 
-    function setVolume(v) { if(ytPlayer) ytPlayer.setVolume(v); }
+    function setVolume(value) {
+        if (!playerReady || !ytPlayer) return;
+        ytPlayer.setVolume(value);
+        document.getElementById('volumeValue').textContent = value + '%';
+    }
 
-    /* ── INIT ── */
+    /* ── INIT (called on splash click) ─────────── */
     function init() {
         const splash = document.getElementById('splash');
         splash.style.opacity = '0';
         setTimeout(() => splash.remove(), 1200);
-
-        // Форсируем запуск музыки
-        if (ytPlayer && ytPlayer.playVideo) {
-            ytPlayer.unMute();
-            ytPlayer.playVideo();
-            startLyrics();
-        }
+        
+        const tryPlay = () => {
+            if (playerReady && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.unMute();
+                ytPlayer.setVolume(80);
+                ytPlayer.playVideo();
+                startLyrics();
+            } else {
+                setTimeout(tryPlay, 300);
+            }
+        };
+        tryPlay();
         fetchDiscord();
-        setInterval(fetchDiscord, 15000);
+        setInterval(fetchDiscord, 12000);
     }
-
-    /* ── LYRICS ── */
+    /* ── LYRICS ────────────────────────────────── */
     const lines = [
         { t: 0, txt: "YUNG FIMOZ & MIGAS — ЛАБУБУ" },
         { t: 8, txt: "Ка-ка-ка-ка-ка-ка-какой, нахуй, Лабубу?" },
@@ -275,46 +428,57 @@
         { t: 53, txt: "Выебу с ДВ альтуху, как и твою маму шлюху" }
     ];
 
-    let currentIdx = -1;
+    let lastLine = null;
+    let lyricsInterval = null;
     function startLyrics() {
-        setInterval(() => {
+        if (lyricsInterval) clearInterval(lyricsInterval);
+        lyricsInterval = setInterval(() => {
             if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
             const time = ytPlayer.getCurrentTime();
-            // Находим строку, которая соответствует текущему времени
-            const activeLine = [...lines].reverse().find(l => time >= l.t);
-            const activeIdx = lines.indexOf(activeLine);
+            
+            // Сброс при зацикливании
+            if (lastLine && time < lastLine.t) lastLine = null;
 
-            if (activeLine && activeIdx !== currentIdx) {
-                currentIdx = activeIdx;
+            const current = [...lines].reverse().find(l => time >= l.t);
+            if (current && current !== lastLine) {
+                lastLine = current;
                 const el = document.getElementById('lyrics-text');
                 el.classList.add('fade');
                 setTimeout(() => {
-                    el.innerText = activeLine.txt;
+                    el.innerText = current.txt;
                     el.classList.remove('fade');
-                }, 300);
+                }, 400);
             }
-        }, 200);
+        }, 300);
     }
-
-    /* ── DISCORD ── */
+    /* ── DISCORD via Lanyard ───────────────────── */
     async function fetchDiscord() {
         const act = document.getElementById('dc-activity');
         const dot = document.getElementById('dot');
         try {
             const res = await fetch('https://api.lanyard.rest/v1/users/1131173686221754398');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const { data } = await res.json();
             
-            dot.className = 'status-dot ' + data.discord_status;
+            const statusMap = { online: 'online', dnd: 'dnd', idle: 'idle', offline: 'offline' };
+            dot.className = 'status-dot ' + (statusMap[data.discord_status] || 'offline');
             
-            if (data.listening_to_spotify) {
-                act.innerText = `Listening to: ${data.spotify.song}`;
-            } else if (data.activities.length > 0) {
-                act.innerText = `Playing: ${data.activities[0].name}`;
-            } else {
-                act.innerText = data.discord_status.toUpperCase();
-            }
+            act.style.opacity = '0';
+            setTimeout(() => {
+                if (data.listening_to_spotify) {
+                    act.innerText = `♪ ${data.spotify.song} — ${data.spotify.artist}`;
+                } else if (data.activities && data.activities.length > 0) {
+                    const activity = data.activities.find(a => a.type === 0) || data.activities[0];
+                    act.innerText = `▶ PLAYING ${activity.name.toUpperCase()}`;
+                } else {
+                    const labels = { online: 'ONLINE', dnd: 'DO NOT DISTURB', idle: 'IDLE', offline: 'OFFLINE' };
+                    act.innerText = labels[data.discord_status] || data.discord_status.toUpperCase();
+                }
+                act.style.opacity = '1';
+            }, 400);
         } catch (e) {
-            act.innerText = "OFFLINE";
+            dot.className = 'status-dot offline';
+            act.innerText = 'STATUS UNAVAILABLE';
         }
     }
 </script>
